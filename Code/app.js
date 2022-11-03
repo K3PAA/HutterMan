@@ -1,3 +1,6 @@
+import boundaries from './map/collision.js'
+import Drawing from './Classes/Drawing.js'
+
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 
@@ -6,48 +9,21 @@ canvas.height = 640
 
 c.fillRect(0, 0, canvas.width, canvas.height)
 
+const playerImage = new Image()
+playerImage.src = './image/player.png'
+
 const bg = new Image()
 bg.src = './assets/Game.png'
 
-bg.onload = () => {
-  animate()
-}
-
-let keys = {
-  w: {
-    pressed: false,
-  },
-  s: {
-    pressed: false,
-  },
-  a: {
-    pressed: false,
-  },
-  d: {
-    pressed: false,
-  },
-}
-
-class Drawing {
-  constructor({ position, velocity, image }) {
-    this.position = position
-    this.velocity = velocity
-    this.image = image
-  }
-  draw() {
-    c.drawImage(this.image, this.position.x, this.position.y)
-  }
-  update() {
-    this.draw()
-    this.position.x += this.velocity.x
-    this.position.y += this.velocity.y
-  }
+const offset = {
+  x: -600,
+  y: -300,
 }
 
 const background = new Drawing({
   position: {
-    x: -600,
-    y: -300,
+    x: offset.x,
+    y: offset.y,
   },
   velocity: {
     x: 0,
@@ -56,27 +32,204 @@ const background = new Drawing({
   image: bg,
 })
 
-let lastKey = ''
+const player = new Drawing({
+  position: {
+    x: canvas.width / 2 - playerImage.width / 2 / 2,
+    y: canvas.height / 2 - playerImage.height / 2,
+  },
+  image: playerImage,
+  frames: { max: 2 },
+  times: 2,
+})
+
+function rectangularCollision({ rectangle1, rectangle2 }) {
+  return (
+    rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
+    rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
+    rectangle1.position.y <= rectangle2.position.y + rectangle2.height &&
+    rectangle1.position.y + rectangle1.height >= rectangle2.position.y
+  )
+}
+
+let moving = {
+  x: true,
+  y: true,
+}
+
+function animate() {
+  requestAnimationFrame(animate)
+
+  background.draw()
+  boundaries.forEach((boundary) => {
+    boundary.draw()
+  })
+  player.draw()
+
+  if (press.up) {
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i]
+      if (
+        rectangularCollision({
+          rectangle1: player,
+          // ... create the same boundaty object but you can modify it
+          rectangle2: {
+            ...boundary,
+            position: {
+              x: boundary.position.x,
+              y: boundary.position.y + 4,
+            },
+          },
+        })
+      ) {
+        moving.y = false
+        break
+      } else moving.y = true
+    }
+  }
+  if (press.down) {
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i]
+      if (
+        rectangularCollision({
+          rectangle1: player,
+          // ... create the same boundaty object but you can modify it
+          rectangle2: {
+            ...boundary,
+            position: {
+              x: boundary.position.x,
+              y: boundary.position.y - 4,
+            },
+          },
+        })
+      ) {
+        moving.y = false
+        break
+      } else moving.y = true
+    }
+  }
+  if (press.left) {
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i]
+      if (
+        rectangularCollision({
+          rectangle1: player,
+          // ... create the same boundaty object but you can modify it
+          rectangle2: {
+            ...boundary,
+            position: {
+              x: boundary.position.x + 4,
+              y: boundary.position.y,
+            },
+          },
+        })
+      ) {
+        moving.x = false
+        break
+      } else moving.x = true
+    }
+  }
+  if (press.right) {
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i]
+      if (
+        rectangularCollision({
+          rectangle1: player,
+          // ... create the same boundaty object but you can modify it
+          rectangle2: {
+            ...boundary,
+            position: {
+              x: boundary.position.x - 3,
+              y: boundary.position.y,
+            },
+          },
+        })
+      ) {
+        moving.x = false
+        break
+      } else moving.x = true
+    }
+  }
+}
+
+bg.onload = () => {
+  animate()
+}
+// We use spread operator so we don't have 2D array
+const moveables = [background, ...boundaries]
+
+let movementSpeed = 1
+
+let press = {
+  up: undefined,
+  down: undefined,
+  left: undefined,
+  right: undefined,
+}
+
 addEventListener('keydown', (e) => {
   switch (e.key) {
     case 'w':
-      keys.w.pressed = true
-      lastKey = 'w'
+      if (!press.up) {
+        press.up = setInterval(() => {
+          if (moving.y) {
+            moveables.forEach((element) => {
+              element.position.y += movementSpeed
+            })
+          } else {
+            moveables.forEach((element) => {
+              element.position.y -= movementSpeed
+            })
+          }
+        }, 1)
+      }
       break
 
     case 's':
-      keys.s.pressed = true
-      lastKey = 's'
+      if (!press.down) {
+        press.down = setInterval(() => {
+          if (moving.y) {
+            moveables.forEach((element) => {
+              element.position.y -= movementSpeed
+            })
+          } else {
+            moveables.forEach((element) => {
+              element.position.y += movementSpeed
+            })
+          }
+        }, 1)
+      }
       break
 
     case 'a':
-      keys.a.pressed = true
-      lastKey = 'a'
+      if (!press.left) {
+        press.left = setInterval(() => {
+          if (moving.x) {
+            moveables.forEach((element) => {
+              element.position.x += movementSpeed
+            })
+          } else {
+            moveables.forEach((element) => {
+              element.position.x -= movementSpeed
+            })
+          }
+        }, 1)
+      }
       break
 
     case 'd':
-      keys.d.pressed = true
-      lastKey = 'd'
+      if (!press.right) {
+        press.right = setInterval(() => {
+          if (moving.x) {
+            moveables.forEach((element) => {
+              element.position.x -= movementSpeed
+            })
+          } else {
+            moveables.forEach((element) => {
+              element.position.x += movementSpeed
+            })
+          }
+        }, 1)
+      }
       break
   }
 })
@@ -84,31 +237,21 @@ addEventListener('keydown', (e) => {
 addEventListener('keyup', (e) => {
   switch (e.key) {
     case 'w':
-      keys.w.pressed = false
+      clearInterval(press.up)
+      press.up = undefined
       break
 
     case 's':
-      keys.s.pressed = false
+      clearInterval(press.down)
+      press.down = undefined
       break
 
     case 'a':
-      keys.a.pressed = false
-      break
-
+      clearInterval(press.left)
+      press.left = undefined
     case 'd':
-      keys.d.pressed = false
+      clearInterval(press.right)
+      press.right = undefined
       break
   }
 })
-
-function animate() {
-  if (keys.w.pressed && lastKey == 'w') background.position.y += 5
-  else if (keys.s.pressed && lastKey == 's') background.position.y += -5
-  else if (keys.a.pressed && lastKey == 'a') background.position.x += 5
-  else if (keys.d.pressed && lastKey == 'd') background.position.x += -5
-
-  background.update()
-  c.fillRect(canvas.width / 2, canvas.height / 2, 64, 64)
-
-  requestAnimationFrame(animate)
-}
