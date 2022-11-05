@@ -1,7 +1,6 @@
-import boundaries from './map/collision.js'
+import { boundaries, bricks } from './map/collision.js'
 import Player from './Classes/Player.js'
 import Bomb from './Classes/Bomb.js'
-import bricks from './map/breakable.js'
 
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
@@ -47,8 +46,6 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
   )
 }
 
-//let stoping = [bricks, boundaries]
-
 function animate() {
   requestAnimationFrame(animate)
 
@@ -74,9 +71,24 @@ function animate() {
     }
   }
 
+  if (boundaries.length >= 1) {
+    for (let i = 0; i < boundaries.length; i++) {
+      if (bombs[0] && boom) {
+        if (
+          rectangularCollision({
+            rectangle1: bombs[0],
+            rectangle2: boundaries[i],
+          }) &&
+          boundaries[i].special
+        ) {
+          boundaries.splice(i, 1)
+        }
+      }
+      boundaries[i].draw()
+    }
+  }
+
   if (press.up) {
-    // for (let i = 0; i < stoping.length; i++) {
-    // let current = stoping[i]
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i]
       if (
@@ -94,27 +106,7 @@ function animate() {
         moving.y = false
         break
       } else moving.y = true
-
-      for (let i = 0; i < bricks.length; i++) {
-        const boundary = bricks[i]
-        if (
-          rectangularCollision({
-            rectangle1: player,
-            rectangle2: {
-              ...boundary,
-              position: {
-                x: boundary.position.x,
-                y: boundary.position.y + 4,
-              },
-            },
-          })
-        ) {
-          moving.y = false
-          break
-        } else moving.y = true
-      }
     }
-    //}
   }
   if (press.down) {
     for (let i = 0; i < boundaries.length; i++) {
@@ -303,3 +295,5 @@ bg.onload = () => {
     }, 1000)
   }, 1250)
 }
+
+console.log(boundaries)
