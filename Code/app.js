@@ -56,9 +56,21 @@ function animate() {
     boundary.draw()
   })
 
-  bricks.forEach((brick) => {
-    brick.draw()
-  })
+  if (bricks.length >= 1) {
+    for (let i = 0; i < bricks.length; i++) {
+      if (bombs[0] && boom) {
+        if (
+          rectangularCollision({
+            rectangle1: bombs[0],
+            rectangle2: bricks[i],
+          })
+        ) {
+          bricks.splice(i, 1)
+        }
+      }
+      bricks[i].draw()
+    }
+  }
 
   if (press.up) {
     for (let i = 0; i < boundaries.length; i++) {
