@@ -22,7 +22,7 @@ class Bomb {
   }
 
   boom() {
-    c.fillStyle = 'red'
+    c.fillStyle = 'orange'
     c.fillRect(this.position.x, this.position.y, this.width, this.height)
   }
 }

@@ -1,6 +1,7 @@
 import boundaries from './map/collision.js'
-import Drawing from './Classes/Drawing.js'
+import Player from './Classes/Player.js'
 import Bomb from './Classes/Bomb.js'
+import bricks from './map/breakable.js'
 
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
@@ -21,26 +22,16 @@ bg.src = './assets/Game.png'
 
 let bombs = []
 
-const background = new Drawing({
+const player = new Player({
   position: {
-    x: 0,
-    y: 0,
-  },
-  image: bg,
-})
-
-const player = new Drawing({
-  position: {
-    x: canvas.width / 2 - playerImage.width / 2 / 2,
-    y: canvas.height / 2 - playerImage.height / 2,
+    x: canvas.width / 2,
+    y: canvas.height / 2,
   },
   velocity: {
     x: 0,
     y: 0,
   },
   image: playerImage,
-  frames: { max: 2 },
-  times: 1.5,
 })
 
 let moving = {
@@ -59,9 +50,14 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
 function animate() {
   requestAnimationFrame(animate)
 
-  background.draw()
+  c.drawImage(bg, 0, 0)
+
   boundaries.forEach((boundary) => {
     boundary.draw()
+  })
+
+  bricks.forEach((brick) => {
+    brick.draw()
   })
 
   if (press.up) {
@@ -268,6 +264,6 @@ bg.onload = () => {
 
       bombs.pop()
       //Audio should be less than 0.5s  pBomb.play()
-    }, 1250)
-  }, 1500)
+    }, 1000)
+  }, 1250)
 }
