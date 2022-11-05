@@ -24,8 +24,8 @@ let bombs = []
 
 const player = new Player({
   position: {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
+    x: 200,
+    y: 200,
   },
   velocity: {
     x: 0,
@@ -46,6 +46,8 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
     rectangle1.position.y + rectangle1.height >= rectangle2.position.y
   )
 }
+
+//let stoping = [bricks, boundaries]
 
 function animate() {
   requestAnimationFrame(animate)
@@ -73,6 +75,8 @@ function animate() {
   }
 
   if (press.up) {
+    // for (let i = 0; i < stoping.length; i++) {
+    // let current = stoping[i]
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i]
       if (
@@ -90,7 +94,27 @@ function animate() {
         moving.y = false
         break
       } else moving.y = true
+
+      for (let i = 0; i < bricks.length; i++) {
+        const boundary = bricks[i]
+        if (
+          rectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...boundary,
+              position: {
+                x: boundary.position.x,
+                y: boundary.position.y + 4,
+              },
+            },
+          })
+        ) {
+          moving.y = false
+          break
+        } else moving.y = true
+      }
     }
+    //}
   }
   if (press.down) {
     for (let i = 0; i < boundaries.length; i++) {
@@ -271,7 +295,7 @@ bg.onload = () => {
           rectangle2: bombs[0],
         })
       ) {
-        console.log('Go')
+        // console.log('Go')
       }
 
       bombs.pop()
