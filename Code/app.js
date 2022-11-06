@@ -1,6 +1,7 @@
-import { boundaries, bricks } from './map/collision.js'
+import { boundaries, bricks, spp, spe } from './map/collision.js'
 import Player from './Classes/Player.js'
 import Bomb from './Classes/Bomb.js'
+import Enemy from './Classes/Enemy.js'
 
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
@@ -23,8 +24,8 @@ let bombs = []
 
 const player = new Player({
   position: {
-    x: 200,
-    y: 200,
+    x: spp[0].position.x,
+    y: spp[0].position.y,
   },
   velocity: {
     x: 0,
@@ -32,6 +33,28 @@ const player = new Player({
   },
   image: playerImage,
 })
+
+const enemies = []
+for (let i = 0; i < 4; i++) {
+  {
+    enemies.push(
+      new Enemy({
+        position: {
+          x: spe[i].position.x,
+          y: spe[i].position.y + 2,
+        },
+        velocity: {
+          x: 0,
+          y: 0,
+        },
+
+        width: 32,
+        height: 60,
+        health: 2,
+      })
+    )
+  }
+}
 
 let moving = {
   x: true,
@@ -170,10 +193,41 @@ function animate() {
   }
 
   bombs.forEach((bomb) => {
-    if (boom) {
+    if (boom && boomed) {
+      for (let i = 0; i < enemies.length; i++) {
+        if (
+          rectangularCollision({
+            rectangle1: enemies[i],
+            rectangle2: bombs[0],
+          })
+        ) {
+          enemies[i].health--
+          if (enemies[i].health == 0) {
+            enemies.splice(i, 1)
+          }
+          boomed = false
+          break
+        }
+      }
       bomb.boom()
     } else bomb.draw()
   })
+
+  enemies.forEach((enemy) => {
+    for (let i = 0; i < boundaries.length; i++) {
+      if (
+        rectangularCollision({
+          rectangle1: boundaries[i],
+          rectangle2: enemy,
+        })
+      ) {
+        enemy.speed = -enemy.speed
+        break
+      }
+    }
+    enemy.update()
+  })
+
   player.draw()
 }
 
@@ -187,6 +241,7 @@ let press = {
 }
 
 let boom = false
+let boomed = false
 
 addEventListener('keydown', (e) => {
   switch (e.key) {
@@ -267,17 +322,18 @@ bg.onload = () => {
     boom = false
     bombs.push(
       new Bomb({
-        width: 96,
-        height: 96,
+        width: 64,
+        height: 64,
         position: {
-          x: player.position.x + player.width / 2 - 32,
-          y: player.position.y + player.height / 2 - 32,
+          x: player.position.x - 20,
+          y: player.position.y - 12,
         },
       })
     )
 
     setTimeout(() => {
       boom = true
+      boomed = true
     }, 750)
 
     setTimeout(() => {
@@ -287,7 +343,7 @@ bg.onload = () => {
           rectangle2: bombs[0],
         })
       ) {
-        // console.log('Go')
+        //console.log('Go')
       }
 
       bombs.pop()

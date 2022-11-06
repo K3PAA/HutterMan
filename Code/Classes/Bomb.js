@@ -14,10 +14,10 @@ class Bomb {
   draw() {
     c.fillStyle = 'black'
     c.fillRect(
-      this.position.x + 32,
-      this.position.y + 32,
-      this.width - 64,
-      this.height - 64
+      this.position.x + 16,
+      this.position.y + 18,
+      this.width - 32,
+      this.height - 32
     )
   }
 

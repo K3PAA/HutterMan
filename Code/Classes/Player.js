@@ -9,7 +9,7 @@ class Player {
     this.position = position
     this.velocity = velocity
     this.image = image
-    this.size = 1.5
+    this.size = 1.4
 
     this.width = 16 * this.size
     this.height = 32 * this.size
