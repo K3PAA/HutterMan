@@ -1,4 +1,4 @@
-import { boundaries, bricks, spp, spe } from './map/collision.js'
+import { boundaries, bricks, spp, spe } from './map/Collisions.js'
 import Player from './Classes/Player.js'
 import Bomb from './Classes/Bomb.js'
 import Enemy from './Classes/Enemy.js'
@@ -15,10 +15,10 @@ let pBomb = new Audio('sounds/p-bomb.mp3')
 pBomb.volume = 0.1
 
 const playerImage = new Image()
-playerImage.src = './image/player.png'
+playerImage.src = './assets/player.png'
 
 const bg = new Image()
-bg.src = './assets/Game.png'
+bg.src = './image/Game1.png'
 
 let bombs = []
 
@@ -32,6 +32,8 @@ const player = new Player({
     y: 0,
   },
   image: playerImage,
+  health: 3,
+  spacing: 8,
 })
 
 const enemies = []
@@ -60,6 +62,8 @@ let moving = {
   x: true,
   y: true,
 }
+
+let inTouch = false
 function rectangularCollision({ rectangle1, rectangle2 }) {
   return (
     rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
@@ -111,87 +115,6 @@ function animate() {
     }
   }
 
-  if (press.up) {
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i]
-      if (
-        rectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x,
-              y: boundary.position.y + 4,
-            },
-          },
-        })
-      ) {
-        moving.y = false
-        break
-      } else moving.y = true
-    }
-  }
-  if (press.down) {
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i]
-      if (
-        rectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x,
-              y: boundary.position.y - 4,
-            },
-          },
-        })
-      ) {
-        moving.y = false
-        break
-      } else moving.y = true
-    }
-  }
-  if (press.left) {
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i]
-      if (
-        rectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x + 4,
-              y: boundary.position.y,
-            },
-          },
-        })
-      ) {
-        moving.x = false
-        break
-      } else moving.x = true
-    }
-  }
-  if (press.right) {
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i]
-      if (
-        rectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x - 3,
-              y: boundary.position.y,
-            },
-          },
-        })
-      ) {
-        moving.x = false
-        break
-      } else moving.x = true
-    }
-  }
-
   bombs.forEach((bomb) => {
     if (boom && boomed) {
       for (let i = 0; i < enemies.length; i++) {
@@ -228,10 +151,24 @@ function animate() {
     enemy.update()
   })
 
-  player.draw()
+  for (let i = 0; i < enemies.length; i++) {
+    if (
+      rectangularCollision({
+        rectangle1: enemies[i],
+        rectangle2: player,
+      })
+    ) {
+      inTouch = true
+      setTimeout(() => {
+        if (inTouch && player.health > 0) player.health--
+        inTouch = false
+      }, 300)
+    }
+  }
+  player.update()
 }
 
-let movementSpeed = 1
+let movementSpeed = 4
 
 let press = {
   up: undefined,
@@ -248,10 +185,23 @@ addEventListener('keydown', (e) => {
     case 'w':
       if (!press.up) {
         press.up = setInterval(() => {
-          if (moving.y) {
-            player.position.y -= movementSpeed
-          } else {
-            player.position.y += 0
+          for (let i = 0; i < boundaries.length; i++) {
+            const boundary = boundaries[i]
+            if (
+              rectangularCollision({
+                rectangle1: player,
+                rectangle2: {
+                  ...boundary,
+                  position: {
+                    x: boundary.position.x,
+                    y: boundary.position.y + 5,
+                  },
+                },
+              })
+            ) {
+              player.velocity.y = 0
+              break
+            } else player.velocity.y = -movementSpeed
           }
         }, 1)
       }
@@ -259,32 +209,75 @@ addEventListener('keydown', (e) => {
     case 's':
       if (!press.down) {
         press.down = setInterval(() => {
-          if (moving.y) {
-            player.position.y += movementSpeed
-          } else {
-            player.position.y -= 0
+          if (press.down) {
+            for (let i = 0; i < boundaries.length; i++) {
+              const boundary = boundaries[i]
+              if (
+                rectangularCollision({
+                  rectangle1: player,
+                  rectangle2: {
+                    ...boundary,
+                    position: {
+                      x: boundary.position.x,
+                      y: boundary.position.y - 5,
+                    },
+                  },
+                })
+              ) {
+                player.velocity.y = 0
+                break
+              } else player.velocity.y = movementSpeed
+            }
           }
         }, 1)
       }
       break
     case 'a':
       if (!press.left) {
+        player.spacing = 8
         press.left = setInterval(() => {
-          if (moving.x) {
-            player.position.x -= movementSpeed
-          } else {
-            player.position.x += 0
+          for (let i = 0; i < boundaries.length; i++) {
+            const boundary = boundaries[i]
+            if (
+              rectangularCollision({
+                rectangle1: player,
+                rectangle2: {
+                  ...boundary,
+                  position: {
+                    x: boundary.position.x + 5,
+                    y: boundary.position.y,
+                  },
+                },
+              })
+            ) {
+              player.velocity.x = 0
+              break
+            } else player.velocity.x = -movementSpeed
           }
         }, 1)
       }
       break
     case 'd':
       if (!press.right) {
+        player.spacing = 40
         press.right = setInterval(() => {
-          if (moving.x) {
-            player.position.x += movementSpeed
-          } else {
-            player.position.x -= 0
+          for (let i = 0; i < boundaries.length; i++) {
+            const boundary = boundaries[i]
+            if (
+              rectangularCollision({
+                rectangle1: player,
+                rectangle2: {
+                  ...boundary,
+                  position: {
+                    x: boundary.position.x - 5,
+                    y: boundary.position.y,
+                  },
+                },
+              })
+            ) {
+              player.velocity.x = 0
+              break
+            } else player.velocity.x = movementSpeed
           }
         }, 1)
       }
@@ -297,17 +290,21 @@ addEventListener('keyup', (e) => {
     case 'w':
       clearInterval(press.up)
       press.up = undefined
+      player.velocity.y = 0
       break
     case 's':
       clearInterval(press.down)
       press.down = undefined
+      player.velocity.y = 0
       break
     case 'a':
       clearInterval(press.left)
       press.left = undefined
+      player.velocity.x = 0
     case 'd':
       clearInterval(press.right)
       press.right = undefined
+      player.velocity.x = 0
       break
   }
 })
@@ -341,15 +338,13 @@ bg.onload = () => {
         rectangularCollision({
           rectangle1: player,
           rectangle2: bombs[0],
-        })
+        }) &&
+        player.health > 0
       ) {
-        //console.log('Go')
+        player.health--
       }
 
       bombs.pop()
-      //Audio should be less than 0.5s  pBomb.play()
-    }, 1000)
-  }, 1250)
+    }, 900)
+  }, 1100)
 }
-
-console.log(boundaries)
