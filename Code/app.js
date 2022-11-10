@@ -156,11 +156,12 @@ function animate() {
         rectangle2: player,
       })
     ) {
+      if (!inTouch && player.health > 0) player.health--
       inTouch = true
+
       setTimeout(() => {
-        if (inTouch && player.health > 0) player.health--
         inTouch = false
-      }, 300)
+      }, 1000)
     }
   }
 
