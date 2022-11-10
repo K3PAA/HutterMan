@@ -17,8 +17,11 @@ pBomb.volume = 0.1
 const playerImage = new Image()
 playerImage.src = './assets/player.png'
 
+const playerDie = new Image()
+playerDie.src = 'assets/Player_die.png'
+
 const bg = new Image()
-bg.src = './image/Game1.png'
+bg.src = './image/Game3.png'
 
 let bombs = []
 
@@ -58,11 +61,6 @@ for (let i = 0; i < 4; i++) {
   }
 }
 
-let moving = {
-  x: true,
-  y: true,
-}
-
 let inTouch = false
 function rectangularCollision({ rectangle1, rectangle2 }) {
   return (
@@ -91,7 +89,7 @@ function animate() {
             rectangle2: bricks[i],
           })
         ) {
-          bricks.splice(i, 1)
+          bricks[i].spacing = 32
         }
       }
       bricks[i].draw()
@@ -165,6 +163,12 @@ function animate() {
       }, 300)
     }
   }
+
+  if (player.health == 0) {
+    player.image = playerDie
+    clearInterval(createBombs)
+    removeEventListener('keydown', move)
+  }
   player.update()
 }
 
@@ -180,7 +184,73 @@ let press = {
 let boom = false
 let boomed = false
 
-addEventListener('keydown', (e) => {
+addEventListener('keydown', move)
+
+addEventListener('keyup', (e) => {
+  switch (e.key) {
+    case 'w':
+      clearInterval(press.up)
+      press.up = undefined
+      player.velocity.y = 0
+      break
+    case 's':
+      clearInterval(press.down)
+      press.down = undefined
+      player.velocity.y = 0
+      break
+    case 'a':
+      clearInterval(press.left)
+      press.left = undefined
+      player.velocity.x = 0
+    case 'd':
+      clearInterval(press.right)
+      press.right = undefined
+      player.velocity.x = 0
+      break
+  }
+})
+
+let createBombs = undefined
+
+bg.onload = () => {
+  animate()
+
+  createBombs = setInterval(() => {
+    //pBomb.play()
+    boom = false
+    bombs.push(
+      new Bomb({
+        width: 64,
+        height: 64,
+        position: {
+          x: player.position.x - 20,
+          y: player.position.y - 12,
+        },
+      })
+    )
+
+    setTimeout(() => {
+      boom = true
+      boomed = true
+    }, 750)
+
+    setTimeout(() => {
+      if (
+        rectangularCollision({
+          rectangle1: player,
+          rectangle2: bombs[0],
+        }) &&
+        player.health > 0
+      ) {
+        player.health--
+      }
+
+      bombs.pop()
+    }, 900)
+  }, 1100)
+}
+
+function move(e) {
   switch (e.key) {
     case 'w':
       if (!press.up) {
@@ -283,68 +353,4 @@ addEventListener('keydown', (e) => {
       }
       break
   }
-})
-
-addEventListener('keyup', (e) => {
-  switch (e.key) {
-    case 'w':
-      clearInterval(press.up)
-      press.up = undefined
-      player.velocity.y = 0
-      break
-    case 's':
-      clearInterval(press.down)
-      press.down = undefined
-      player.velocity.y = 0
-      break
-    case 'a':
-      clearInterval(press.left)
-      press.left = undefined
-      player.velocity.x = 0
-    case 'd':
-      clearInterval(press.right)
-      press.right = undefined
-      player.velocity.x = 0
-      break
-  }
-})
-
-let createBombs = undefined
-
-bg.onload = () => {
-  animate()
-
-  createBombs = setInterval(() => {
-    //pBomb.play()
-    boom = false
-    bombs.push(
-      new Bomb({
-        width: 64,
-        height: 64,
-        position: {
-          x: player.position.x - 20,
-          y: player.position.y - 12,
-        },
-      })
-    )
-
-    setTimeout(() => {
-      boom = true
-      boomed = true
-    }, 750)
-
-    setTimeout(() => {
-      if (
-        rectangularCollision({
-          rectangle1: player,
-          rectangle2: bombs[0],
-        }) &&
-        player.health > 0
-      ) {
-        player.health--
-      }
-
-      bombs.pop()
-    }, 900)
-  }, 1100)
 }

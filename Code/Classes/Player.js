@@ -15,16 +15,19 @@ class Player {
     this.health = health
     this.size = 1.4
 
+    this.Interval = undefined
+
     this.width = 16 * this.size
     this.height = 32 * this.size
 
     this.spacing = spacing
+    this.frames = 0
   }
   draw() {
     // c.drawImage(this.image, this.position.x, this.position.y)
     c.drawImage(
       this.image,
-      this.spacing,
+      this.spacing + this.frames,
       0,
       this.width / this.size,
       this.height / this.size,
@@ -35,8 +38,6 @@ class Player {
     )
   }
   update() {
-    this.draw()
-
     this.position.x += this.velocity.x
     this.position.y += this.velocity.y
 
@@ -44,10 +45,17 @@ class Player {
       c.drawImage(heart, 0, 0, 254, 254, i * 34 + 10, 10, 32, 32)
     }
     if (this.health == 0) {
-      c.font = '70px Arial'
-      c.fillStyle = 'Black'
-      c.fillText('You Lost', canvas.width / 2, canvas.height / 2)
+      if (this.frames < 416) {
+        this.Interval = setInterval(() => {
+          this.frames += 32
+        }, 400)
+      } else {
+        this.Interval = undefined
+        clearInterval(this.Interval)
+        this.frames = 384
+      }
     }
+    this.draw()
   }
 }
 

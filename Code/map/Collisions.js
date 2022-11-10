@@ -12,7 +12,7 @@ const spp = []
 const spe = []
 
 const box = new Image()
-box.src = 'assets/heart.png'
+box.src = 'assets/boxes.png'
 
 const collisions = data[2]
 const collisionMap = []
@@ -31,6 +31,7 @@ class Boundary {
     this.height = height
     this.image = image
     this.special = special
+    this.spacing = 0
   }
 
   draw() {
@@ -38,20 +39,21 @@ class Boundary {
       c.fillStyle = 'transparent'
       c.fillRect(this.position.x, this.position.y, this.width, this.height)
     } else {
-      //   c.drawImage(
-      //     this.image,
-      //     this.position.x,
-      //     this.position.y,
-      //     this.width,
-      //     this.height
-      //   )
-      // }
-      c.fillStyle = 'green'
-      c.fillRect(this.position.x, this.position.y, this.width, this.height)
+      c.drawImage(
+        this.image,
+        this.spacing,
+        0,
+        this.width,
+        this.height,
+        this.position.x,
+        this.position.y,
+        this.width,
+        this.height
+      )
     }
   }
 }
-let id = 0
+
 collisionMap.forEach((row, y) => {
   row.forEach((symbol, x) => {
     if (symbol == 1) {
