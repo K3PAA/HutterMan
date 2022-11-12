@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
 }
 
 img {
@@ -100,4 +101,123 @@ main {
   text-shadow: 1px 1px black;
   z-index: 10;
   transform: translate(-50%, -50%);
+}
+
+.cards {
+  z-index: 100;
+  border-radius: 10px;
+  width: 800px;
+  height: 568px;
+  position: absolute;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateY(0);
+  transition: all 0.6s ease;
+}
+
+.cards h1 {
+  color: rgba(222, 100, 100);
+  letter-spacing: 2px;
+  font-size: 3.5rem;
+  margin: 20px 0;
+}
+
+.authors-section {
+  width: 70%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.center-text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.center-text h2 {
+  font-size: 1.75rem;
+}
+
+.copy-text {
+  display: flex;
+  background-color: whitesmoke;
+  border-radius: 10px;
+  padding: 10px;
+  position: relative;
+}
+
+.copy-text input.text {
+  padding: 10px;
+  font-size: 20px;
+  color: #555;
+  outline: none;
+  border: 0;
+}
+
+.copy-text button {
+  padding: 10px;
+  background: #5784f5;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+}
+
+.copy-text button:active {
+  background-color: #809ce2;
+}
+
+.copy-text button:before {
+  content: 'copied';
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background: #5c81dc;
+  padding: 8px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: none;
+}
+
+.copy-text button::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: 24px;
+  background: #5c81dc;
+  width: 10px;
+  height: 10px;
+  rotate: 45deg;
+  display: none;
+}
+
+.copy-text.active button::before,
+.copy-text.active button::after {
+  display: block;
+}
+
+.close-btn {
+  margin-top: 120px;
+  padding: 10px 30px;
+  font-size: 1.75rem;
+  border-radius: 10px;
+  background-color: rgba(222, 100, 100);
+  color: white;
+  border: 0;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+.close-authors:hover {
+  background-color: rgb(181, 0, 0);
+}
+
+.cards.offScreen {
+  transform: translateY(600px);
+  opacity: 0;
+  pointer-events: none;
 }

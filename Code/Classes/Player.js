@@ -48,7 +48,7 @@ class Player {
       if (this.frames < 416) {
         this.Interval = setInterval(() => {
           this.frames += 32
-        }, 400)
+        }, 500)
       } else {
         this.Interval = undefined
         clearInterval(this.Interval)

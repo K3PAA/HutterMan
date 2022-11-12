@@ -360,3 +360,53 @@ function stop(e) {
     press.right = undefined
   }
 }
+
+//Copy text Functionality
+
+let copyText = document.querySelectorAll('.copy-text')
+
+copyText.forEach((text) => {
+  text.querySelector('button').addEventListener('click', () => {
+    copyText.forEach((text) => {
+      text.classList.remove('active')
+    })
+    let input = text.querySelector('input.text')
+    input.select()
+    document.execCommand('copy')
+    text.classList.add('active')
+    window.getSelection().removeAllRanges()
+
+    setTimeout(() => {
+      text.classList.remove('active')
+    }, 2000)
+  })
+})
+
+const closeButtons = document.querySelectorAll('.close-btn')
+const authors = document.querySelector('.authors')
+const instruction = document.querySelector('.instruction')
+const openButtons = document.querySelectorAll('.set-btn')
+
+console.log(openButtons)
+
+openButtons.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    if (e.currentTarget.className.includes('authors-btn')) {
+      authors.classList.remove('offScreen')
+    }
+    if (e.currentTarget.className.includes('instruction-btn')) {
+      instruction.classList.remove('offScreen')
+    }
+  })
+})
+
+closeButtons.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    if (e.currentTarget.className.includes('authors-btn')) {
+      authors.classList.add('offScreen')
+    }
+    if (e.currentTarget.className.includes('instruction-btn')) {
+      instruction.classList.add('offScreen')
+    }
+  })
+})
