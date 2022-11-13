@@ -1,4 +1,5 @@
 import data from './data.js'
+import Huts from '../Classes/Huts.js'
 
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
@@ -8,13 +9,19 @@ canvas.height = 768
 
 const boundaries = []
 const bricks = []
+const pillars = []
+const huts2 = []
 const spp = []
 const spe = []
+const ice = []
 
 const box = new Image()
 box.src = 'assets/boxes.png'
 
-const collisions = data[2]
+const pillar = new Image()
+pillar.src = 'assets/Pillar.png'
+
+const collisions = data[0]
 const collisionMap = []
 
 for (let i = 0; i < collisions.length; i += 32) {
@@ -56,7 +63,7 @@ class Boundary {
 
 collisionMap.forEach((row, y) => {
   row.forEach((symbol, x) => {
-    if (symbol == 1) {
+    if (symbol == 2) {
       boundaries.push(
         new Boundary({
           position: {
@@ -67,7 +74,30 @@ collisionMap.forEach((row, y) => {
           height: 32,
         })
       )
-    } else if (symbol == 2) {
+    } else if (symbol == 3) {
+      boundaries.push(
+        new Boundary({
+          position: {
+            x: x * Boundary.width,
+            y: y * Boundary.height,
+          },
+          width: 32,
+          height: 32,
+        })
+      )
+      pillars.push(
+        new Boundary({
+          position: {
+            x: x * Boundary.width,
+            y: y * Boundary.height,
+          },
+          width: 32,
+          height: 32,
+          spacing: 0,
+          image: pillar,
+        })
+      )
+    } else if (symbol == 4) {
       boundaries.push(
         new Boundary({
           position: {
@@ -90,8 +120,18 @@ collisionMap.forEach((row, y) => {
           height: 32,
         })
       )
-    } // 3 = Player spawning Points
-    else if (symbol == 3) {
+    } else if (symbol == 5) {
+      huts2.push(
+        new Huts({
+          position: {
+            x: x * 32,
+            y: y * 32,
+          },
+        })
+      )
+    }
+    //  Player spawning Points
+    else if (symbol == 6) {
       spp.push(
         new Boundary({
           position: {
@@ -102,9 +142,20 @@ collisionMap.forEach((row, y) => {
           height: 32,
         })
       )
-    } // 4 = Enemy Spawning Points
-    else if (symbol == 4) {
+    } // Enemy Spawning Points
+    else if (symbol == 7) {
       spe.push(
+        new Boundary({
+          position: {
+            x: x * Boundary.width,
+            y: y * Boundary.height,
+          },
+          width: 32,
+          height: 32,
+        })
+      )
+    } else if (symbol == 8) {
+      ice.push(
         new Boundary({
           position: {
             x: x * Boundary.width,
@@ -118,4 +169,4 @@ collisionMap.forEach((row, y) => {
   })
 })
 
-export { boundaries, bricks, spp, spe }
+export { boundaries, bricks, spp, spe, pillars, ice, huts2 }

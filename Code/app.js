@@ -1,18 +1,28 @@
-import { boundaries, bricks, spp, spe } from './map/Collisions.js'
+import {
+  boundaries,
+  bricks,
+  spp,
+  spe,
+  pillars,
+  ice,
+  huts2,
+} from './map/Collisions.js'
 import Player from './Classes/Player.js'
 import Bomb from './Classes/Bomb.js'
 import Enemy from './Classes/Enemy.js'
+import Huts from './Classes/Huts.js'
 
+let huts = []
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 
 canvas.width = 1024
 canvas.height = 768
 
-c.fillRect(0, 0, canvas.width, canvas.height)
-
 let pBomb = new Audio('sounds/p-bomb.mp3')
 pBomb.volume = 0.1
+
+let currentLevel = undefined
 
 const playerImage = new Image()
 playerImage.src = './assets/player.png'
@@ -21,7 +31,7 @@ const playerDie = new Image()
 playerDie.src = 'assets/Player_die.png'
 
 const bg = new Image()
-bg.src = './image/Game3.png'
+bg.src = './image/Level-1.png'
 
 let bombs = []
 
@@ -40,7 +50,7 @@ const player = new Player({
 })
 
 const enemies = []
-for (let i = 0; i < 4; i++) {
+for (let i = 0; i < 2; i++) {
   {
     enemies.push(
       new Enemy({
@@ -71,6 +81,8 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
   )
 }
 
+let sliding = 0.01
+
 function animate() {
   requestAnimationFrame(animate)
 
@@ -78,6 +90,32 @@ function animate() {
 
   boundaries.forEach((boundary) => {
     boundary.draw()
+  })
+
+  huts2.forEach((hut, i) => {
+    if (
+      rectangularCollision({
+        rectangle1: hut,
+        rectangle2: player,
+      })
+    ) {
+      player.collected++
+      huts2.splice(i, 1)
+    }
+    hut.draw()
+  })
+
+  huts.forEach((hut, i) => {
+    if (
+      rectangularCollision({
+        rectangle1: hut,
+        rectangle2: player,
+      })
+    ) {
+      player.collected++
+      huts.splice(i, 1)
+    }
+    hut.draw()
   })
 
   if (bricks.length >= 1) {
@@ -113,6 +151,10 @@ function animate() {
     }
   }
 
+  pillars.forEach((pillar) => {
+    pillar.draw()
+  })
+
   bombs.forEach((bomb) => {
     if (boom && boomed) {
       for (let i = 0; i < enemies.length; i++) {
@@ -124,6 +166,20 @@ function animate() {
         ) {
           enemies[i].health--
           if (enemies[i].health == 0) {
+            let curr = {
+              x: enemies[i].position.x,
+              y: enemies[i].position.y,
+            }
+            setTimeout(() => {
+              huts.push(
+                new Huts({
+                  position: {
+                    x: curr.x,
+                    y: curr.y,
+                  },
+                })
+              )
+            }, 200)
             enemies.splice(i, 1)
           }
           boomed = false
@@ -176,6 +232,32 @@ function animate() {
   } else {
     player.spacing = 8
   }
+
+  ice.forEach((tile) => {
+    if (
+      rectangularCollision({
+        rectangle1: tile,
+        rectangle2: player,
+      })
+    ) {
+      if (sliding < 1.5) sliding += 0.03
+
+      if (lastKey == 'w') player.position.y -= sliding
+      else if (lastKey == 's') player.position.y += sliding
+      else if (lastKey == 'a') player.position.x -= sliding
+      else if (lastKey == 'd') player.position.x += sliding
+    }
+  })
+
+  if (player.collected == 4) {
+    clearInterval(createBombs)
+    createBombs = undefined
+    menu.classList.remove('offScreen')
+    game.classList.remove('onScreen')
+
+    //Some kind of way to unlock next level
+  }
+
   player.update()
 }
 
@@ -195,48 +277,11 @@ addEventListener('keydown', move)
 
 addEventListener('keyup', stop)
 
-let createBombs = undefined
-
-bg.onload = () => {
-  animate()
-
-  createBombs = setInterval(() => {
-    //pBomb.play()
-    boom = false
-    bombs.push(
-      new Bomb({
-        width: 64,
-        height: 64,
-        position: {
-          x: player.position.x - 20,
-          y: player.position.y - 12,
-        },
-      })
-    )
-
-    setTimeout(() => {
-      boom = true
-      boomed = true
-    }, 750)
-
-    setTimeout(() => {
-      if (
-        rectangularCollision({
-          rectangle1: player,
-          rectangle2: bombs[0],
-        }) &&
-        player.health > 0
-      ) {
-        player.health--
-      }
-
-      bombs.pop()
-    }, 900)
-  }, 1100)
-}
+let lastKey = undefined
 
 function move(e) {
   if (e.key == 'd') {
+    lastKey = 'd'
     if (!press.right) {
       player.spacing = 40
       press.right = setInterval(() => {
@@ -262,6 +307,7 @@ function move(e) {
     }
   }
   if (e.key == 'w') {
+    lastKey = 'w'
     if (!press.up) {
       press.up = setInterval(() => {
         for (let i = 0; i < boundaries.length; i++) {
@@ -287,6 +333,7 @@ function move(e) {
   }
 
   if (e.key == 's') {
+    lastKey = 's'
     if (!press.down) {
       press.down = setInterval(() => {
         for (let i = 0; i < boundaries.length; i++) {
@@ -312,6 +359,7 @@ function move(e) {
   }
 
   if (e.key == 'a') {
+    lastKey = 'a'
     if (!press.left) {
       player.spacing = 8
       press.left = setInterval(() => {
@@ -387,8 +435,6 @@ const authors = document.querySelector('.authors')
 const instruction = document.querySelector('.instruction')
 const openButtons = document.querySelectorAll('.set-btn')
 
-console.log(openButtons)
-
 openButtons.forEach((btn) => {
   btn.addEventListener('click', (e) => {
     if (e.currentTarget.className.includes('authors-btn')) {
@@ -410,3 +456,102 @@ closeButtons.forEach((btn) => {
     }
   })
 })
+
+const startButton = document.querySelector('.start-game')
+const menu = document.querySelector('.menu')
+const levels = document.querySelectorAll('.level')
+
+const game = document.querySelector('.game-display')
+
+let createBombs = undefined
+
+bg.onload = () => {
+  levels.forEach((level) => {
+    level.addEventListener('click', (e) => {
+      if (e.currentTarget.className.includes('playable')) {
+        if (e.currentTarget.className.includes('level-one')) {
+          currentLevel = 1
+
+          menu.classList.add('offScreen')
+          game.classList.add('onScreen')
+
+          animate()
+
+          createBombs = setInterval(() => {
+            //pBomb.play()
+            boom = false
+            bombs.push(
+              new Bomb({
+                width: 64,
+                height: 64,
+                position: {
+                  x: player.position.x - 20,
+                  y: player.position.y - 12,
+                },
+              })
+            )
+
+            setTimeout(() => {
+              boom = true
+              boomed = true
+            }, 750)
+
+            setTimeout(() => {
+              if (
+                rectangularCollision({
+                  rectangle1: player,
+                  rectangle2: bombs[0],
+                }) &&
+                player.health > 0
+              ) {
+                player.health--
+              }
+
+              bombs.pop()
+            }, 900)
+          }, 1100)
+        }
+      }
+    })
+  })
+  startButton.addEventListener('click', () => {
+    menu.classList.add('offScreen')
+    game.classList.add('onScreen')
+
+    animate()
+
+    createBombs = setInterval(() => {
+      //pBomb.play()
+      boom = false
+      bombs.push(
+        new Bomb({
+          width: 64,
+          height: 64,
+          position: {
+            x: player.position.x - 20,
+            y: player.position.y - 12,
+          },
+        })
+      )
+
+      setTimeout(() => {
+        boom = true
+        boomed = true
+      }, 750)
+
+      setTimeout(() => {
+        if (
+          rectangularCollision({
+            rectangle1: player,
+            rectangle2: bombs[0],
+          }) &&
+          player.health > 0
+        ) {
+          player.health--
+        }
+
+        bombs.pop()
+      }, 900)
+    }, 1100)
+  })
+}

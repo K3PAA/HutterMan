@@ -1,7 +1,8 @@
 const game = [
   {
-    image: 'image/Game3.png',
-    enemies: 4,
+    image: 'assets/levels-example.png',
+    map: 'image/Level-1.png',
+    enemies: 2,
     data: [
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

@@ -5,6 +5,9 @@
   font-family: 'Inter', sans-serif;
 }
 
+body {
+  overflow: hidden;
+}
 img {
   width: 100%;
 }
@@ -84,6 +87,7 @@ main {
   opacity: 0.4;
   filter: rgb(0, 0, 0);
   -webkit-filter: grayscale(1);
+
   filter: grayscale(1);
 }
 
@@ -216,8 +220,15 @@ main {
   background-color: rgb(181, 0, 0);
 }
 
-.cards.offScreen {
+.cards.offScreen,
+.menu.offScreen {
   transform: translateY(600px);
   opacity: 0;
   pointer-events: none;
+}
+
+.game-display.onScreen {
+  position: relative;
+  top: -768px;
+  z-index: 100;
 }

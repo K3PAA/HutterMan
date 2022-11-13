@@ -14,11 +14,12 @@ class Player {
     this.image = image
     this.health = health
     this.size = 1.4
-
     this.Interval = undefined
 
     this.width = 16 * this.size
     this.height = 32 * this.size
+
+    this.collected = 0
 
     this.spacing = spacing
     this.frames = 0
