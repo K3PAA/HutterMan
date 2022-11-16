@@ -28,7 +28,7 @@ for (let i = 0; i < collisions.length; i += 32) {
   collisionMap.push(collisions.slice(i, i + 32))
 }
 
-class Boundary {
+export class Boundary {
   static width = 32
   static height = 32
   constructor({ position, image = '', special, width, height }) {

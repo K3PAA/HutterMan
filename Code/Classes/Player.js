@@ -8,12 +8,13 @@ const heart = new Image()
 heart.src = 'assets/heart.png'
 
 class Player {
-  constructor({ position, velocity, image, health, spacing }) {
+  constructor({ position, velocity, image, health, spacing, toCollect }) {
     this.position = position
     this.velocity = velocity
     this.image = image
     this.health = health
     this.size = 1.4
+    this.toCollect = toCollect
     this.Interval = undefined
 
     this.width = 16 * this.size

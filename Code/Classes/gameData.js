@@ -1,8 +1,9 @@
-const game = [
+const gamedata = [
   {
     image: 'assets/levels-example.png',
-    map: 'image/Level-1.png',
+    background: 'image/Level-1.png',
     enemies: 2,
+    totalHuts: 4,
     data: [
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -38,3 +39,5 @@ const game = [
     ],
   },
 ]
+
+export default gamedata
