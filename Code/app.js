@@ -1,12 +1,4 @@
-import {
-  boundaries,
-  bricks,
-  spp,
-  spe,
-  pillars,
-  ice,
-  huts2,
-} from './map/Collisions.js'
+import Boundary from './Classes/Boundary.js'
 import Player from './Classes/Player.js'
 import Bomb from './Classes/Bomb.js'
 import Enemy from './Classes/Enemy.js'
@@ -38,6 +30,12 @@ playerImage.src = './assets/player.png'
 const playerDie = new Image()
 playerDie.src = 'assets/Player_die.png'
 
+const box = new Image()
+box.src = 'assets/boxes.png'
+
+const pillar = new Image()
+pillar.src = 'assets/Pillar.png'
+
 const bg = new Image()
 
 let huts = undefined
@@ -59,6 +57,15 @@ let currentLevel = undefined
 
 let player = undefined
 let enemies = undefined
+let collisionMap = undefined
+let boundaries = undefined
+let bricks = undefined
+let pillars = undefined
+let huts2 = undefined
+let spp = undefined
+let spe = undefined
+let ice = undefined
+
 let animate = undefined
 
 levels.forEach((level) => {
@@ -80,8 +87,129 @@ levels.forEach((level) => {
 
       // Reseting Values
       huts = []
+      collisionMap = []
+      boundaries = []
+      bricks = []
+      pillars = []
+      huts2 = []
+      spp = []
+      spe = []
+      ice = []
       //Initialing values
+      let collisions = gameData[currentLevel].data
       bg.src = gameData[currentLevel].background
+
+      for (let i = 0; i < collisions.length; i += 32) {
+        collisionMap.push(collisions.slice(i, i + 32))
+      }
+
+      collisionMap.forEach((row, y) => {
+        row.forEach((symbol, x) => {
+          if (symbol == 2) {
+            boundaries.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                width: 32,
+                height: 32,
+              })
+            )
+          } else if (symbol == 3) {
+            boundaries.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                width: 32,
+                height: 32,
+              })
+            )
+            pillars.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                width: 32,
+                height: 32,
+                spacing: 0,
+                image: pillar,
+              })
+            )
+          } else if (symbol == 4) {
+            boundaries.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                special: true,
+                width: 32,
+                height: 32,
+              })
+            )
+            bricks.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                image: box,
+                width: 32,
+                height: 32,
+              })
+            )
+          } else if (symbol == 5) {
+            huts2.push(
+              new Huts({
+                position: {
+                  x: x * 32,
+                  y: y * 32,
+                },
+              })
+            )
+          }
+          //  Player spawning Points
+          else if (symbol == 6) {
+            spp.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                width: 32,
+                height: 32,
+              })
+            )
+          } // Enemy Spawning Points
+          else if (symbol == 7) {
+            spe.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                width: 32,
+                height: 32,
+              })
+            )
+          } else if (symbol == 8) {
+            ice.push(
+              new Boundary({
+                position: {
+                  x: x * Boundary.width,
+                  y: y * Boundary.height,
+                },
+                width: 32,
+                height: 32,
+              })
+            )
+          }
+        })
+      })
 
       player = new Player({
         position: {
@@ -264,8 +392,14 @@ levels.forEach((level) => {
 
           if (player.health == 0) {
             player.image = playerDie
-            clearInterval(createBombs)
             removeEventListener('keydown', move)
+            clearInterval(createBombs)
+            createBombs = undefined
+            clearInterval(animate)
+            animate = undefined
+            setTimeout(() => {
+              reset()
+            }, 1000)
           }
 
           if (player.velocity.x > 0) {
@@ -293,21 +427,16 @@ levels.forEach((level) => {
           if (player.collected == 1) {
             clearInterval(createBombs)
             createBombs = undefined
+            clearInterval(animate)
+            animate = undefined
 
             c.fillStyle = 'red'
             c.font = `40px Verdana`
             c.fillText('Level Completed', canvas.width / 2, canvas.height / 2)
-            removeEventListener('keydown', move)
-            currentLevel++
-            player.collected = 0
 
             setTimeout(() => {
-              menu.classList.remove('offScreen')
-              gameDisplay.classList.remove('onScreen')
-              clearInterval(animate)
-              animate = undefined
-              currentLevel = undefined
-            }, 2000)
+              reset()
+            }, 1000)
 
             //Some kind of way to unlock next level
           }
@@ -495,6 +624,13 @@ function stop(e) {
     player.velocity.x = 0
     press.right = undefined
   }
+}
+
+function reset() {
+  menu.classList.remove('offScreen')
+  gameDisplay.classList.remove('onScreen')
+
+  player.collected = 0
 }
 
 //Copy text Functionality
