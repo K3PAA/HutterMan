@@ -15,6 +15,10 @@ canvas.height = 768
 const pBomb = new Audio('sounds/p-bomb.mp3')
 pBomb.volume = 0.1
 
+// In lobby add Functionality to change the game volume based on input system
+const gameOn = new Audio('sounds/game.mp3')
+gameOn.volume = 0.4
+
 const menu = document.querySelector('.menu')
 const levels = document.querySelectorAll('.level')
 const closeButtons = document.querySelectorAll('.close-btn')
@@ -68,6 +72,8 @@ let ice = undefined
 
 let animate = undefined
 
+let levelsWon = []
+
 levels.forEach((level) => {
   level.addEventListener('click', (e) => {
     if (e.currentTarget.className.includes('playable')) {
@@ -95,9 +101,12 @@ levels.forEach((level) => {
       spp = []
       spe = []
       ice = []
+      enemies = []
       //Initialing values
       let collisions = gameData[currentLevel].data
       bg.src = gameData[currentLevel].background
+
+      gameOn.play()
 
       for (let i = 0; i < collisions.length; i += 32) {
         collisionMap.push(collisions.slice(i, i + 32))
@@ -105,7 +114,24 @@ levels.forEach((level) => {
 
       collisionMap.forEach((row, y) => {
         row.forEach((symbol, x) => {
-          if (symbol == 2) {
+          if (symbol == 0) {
+            enemies.push(
+              new Enemy({
+                position: {
+                  x: x * 32,
+                  y: y * 32,
+                },
+                velocity: {
+                  x: 0,
+                  y: 0,
+                },
+                move: 'y',
+                width: 32,
+                height: 60,
+                health: 2,
+              })
+            )
+          } else if (symbol == 2) {
             boundaries.push(
               new Boundary({
                 position: {
@@ -186,14 +212,20 @@ levels.forEach((level) => {
             )
           } // Enemy Spawning Points
           else if (symbol == 7) {
-            spe.push(
-              new Boundary({
+            enemies.push(
+              new Enemy({
                 position: {
-                  x: x * Boundary.width,
-                  y: y * Boundary.height,
+                  x: x * 32,
+                  y: y * 32,
                 },
+                velocity: {
+                  x: 0,
+                  y: 0,
+                },
+                move: 'x',
                 width: 32,
-                height: 32,
+                height: 60,
+                health: 2,
               })
             )
           } else if (symbol == 8) {
@@ -213,40 +245,18 @@ levels.forEach((level) => {
 
       player = new Player({
         position: {
-          x: spp[currentLevel].position.x,
-          y: spp[currentLevel].position.y,
+          x: spp[0].position.x,
+          y: spp[0].position.y,
         },
         velocity: {
           x: 0,
           y: 0,
         },
         image: playerImage,
-        health: 3,
+        health: gameData[currentLevel].health,
         spacing: 8,
         toCollect: gameData[currentLevel].totalHuts,
       })
-
-      enemies = []
-      for (let i = 0; i < gameData[currentLevel].enemies; i++) {
-        {
-          enemies.push(
-            new Enemy({
-              position: {
-                x: spe[i].position.x,
-                y: spe[i].position.y + 2,
-              },
-              velocity: {
-                x: 0,
-                y: 0,
-              },
-
-              width: 32,
-              height: 60,
-              health: 2,
-            })
-          )
-        }
-      }
 
       //Making Game visible
       menu.classList.add('offScreen')
@@ -392,12 +402,13 @@ levels.forEach((level) => {
 
           if (player.health == 0) {
             player.image = playerDie
+            gameOn.pause()
             removeEventListener('keydown', move)
             clearInterval(createBombs)
             createBombs = undefined
-            clearInterval(animate)
-            animate = undefined
             setTimeout(() => {
+              clearInterval(animate)
+              animate = undefined
               reset()
             }, 1000)
           }
@@ -424,15 +435,34 @@ levels.forEach((level) => {
             }
           })
           //player.toCollect daj zamiast 1
-          if (player.collected == 1) {
+          if (player.collected == player.toCollect) {
             clearInterval(createBombs)
             createBombs = undefined
-            clearInterval(animate)
-            animate = undefined
+
+            gameOn.pause()
 
             c.fillStyle = 'red'
             c.font = `40px Verdana`
             c.fillText('Level Completed', canvas.width / 2, canvas.height / 2)
+
+            clearInterval(animate)
+            animate = undefined
+
+            for (let i = 0; i < levelsWon.length; i++) {
+              if (levelsWon[i] == currentLevel) {
+                levelsWon.pop()
+              }
+            }
+
+            levelsWon.push(currentLevel)
+
+            currentLevel++
+
+            levels.forEach((level) => {
+              if (level.className.includes(`level-${currentLevel + 1}`)) {
+                level.classList.add('playable')
+              }
+            })
 
             setTimeout(() => {
               reset()

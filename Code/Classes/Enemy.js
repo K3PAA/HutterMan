@@ -5,13 +5,14 @@ canvas.width = 1024
 canvas.height = 768
 
 class Enemy {
-  constructor({ position, velocity, health, speed, width, height }) {
+  constructor({ position, velocity, health, move, width, height }) {
     this.position = position
     this.startingPosition = JSON.parse(JSON.stringify(position))
     this.velocity = velocity
     this.width = width
     this.height = height
     this.health = health
+    this.move = move
 
     this.speed = 2
   }
@@ -23,9 +24,18 @@ class Enemy {
 
   update() {
     this.draw()
-    if (this.startingPosition.x >= canvas.width / 2)
-      this.position.x -= this.speed
-    else this.position.x += this.speed
+
+    if (this.move == 'x') {
+      if (this.startingPosition.x >= canvas.width / 2)
+        this.position.x -= this.speed
+      else this.position.x += this.speed
+    }
+
+    if (this.move == 'y') {
+      if (this.startingPosition.x >= canvas.width / 2)
+        this.position.y -= this.speed
+      else this.position.y += this.speed
+    }
   }
   //Enemie will follow Player
   follow() {}
