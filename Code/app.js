@@ -74,24 +74,31 @@ let animate = undefined
 
 let levelsWon = []
 
+if (localStorage.getItem('savedLevels')) {
+  let savedLevels = JSON.parse(localStorage.getItem('savedLevels'))
+
+  for (let i = 0; i < savedLevels.length; i++) {
+    levelsWon.push(savedLevels[i] + 1)
+  }
+}
+
 levels.forEach((level) => {
   level.addEventListener('click', (e) => {
     if (e.currentTarget.className.includes('playable')) {
-      if (e.currentTarget.className.includes('level-1')) {
+      if (e.currentTarget.className.includes('level-0')) {
         currentLevel = 0
-      } else if (e.currentTarget.className.includes('level-2')) {
+      } else if (e.currentTarget.className.includes('level-1')) {
         currentLevel = 1
-      } else if (e.currentTarget.className.includes('level-3')) {
+      } else if (e.currentTarget.className.includes('level-2')) {
         currentLevel = 2
-      } else if (e.currentTarget.className.includes('level-4')) {
+      } else if (e.currentTarget.className.includes('level-3')) {
         currentLevel = 3
-      } else if (e.currentTarget.className.includes('level-5')) {
+      } else if (e.currentTarget.className.includes('level-4')) {
         currentLevel = 4
-      } else if (e.currentTarget.className.includes('level-6')) {
+      } else if (e.currentTarget.className.includes('level-5')) {
         currentLevel = 5
       }
 
-      // Reseting Values
       huts = []
       collisionMap = []
       boundaries = []
@@ -103,8 +110,11 @@ levels.forEach((level) => {
       ice = []
       enemies = []
       //Initialing values
-      let collisions = gameData[currentLevel].data
-      bg.src = gameData[currentLevel].background
+
+      let curr = currentLevel
+
+      let collisions = gameData[curr].data
+      bg.src = gameData[curr].background
 
       gameOn.play()
 
@@ -253,9 +263,9 @@ levels.forEach((level) => {
           y: 0,
         },
         image: playerImage,
-        health: gameData[currentLevel].health,
+        health: gameData[curr].health,
         spacing: 8,
-        toCollect: gameData[currentLevel].totalHuts,
+        toCollect: gameData[curr].totalHuts,
       })
 
       //Making Game visible
@@ -435,7 +445,7 @@ levels.forEach((level) => {
             }
           })
           //player.toCollect daj zamiast 1
-          if (player.collected == player.toCollect) {
+          if (player.collected == 1) {
             clearInterval(createBombs)
             createBombs = undefined
 
@@ -448,21 +458,19 @@ levels.forEach((level) => {
             clearInterval(animate)
             animate = undefined
 
-            for (let i = 0; i < levelsWon.length; i++) {
-              if (levelsWon[i] == currentLevel) {
+            levelsWon.push(curr)
+
+            for (let i = 0; i < levelsWon.length - 1; i++) {
+              if (levelsWon[i] == curr) {
                 levelsWon.pop()
               }
             }
 
-            levelsWon.push(currentLevel)
-
-            currentLevel++
-
-            levels.forEach((level) => {
-              if (level.className.includes(`level-${currentLevel + 1}`)) {
-                level.classList.add('playable')
-              }
+            levelsWon.forEach((num) => {
+              levels[num + 1].classList.add('playable')
             })
+
+            localStorage.setItem('savedLevels', JSON.stringify(levelsWon))
 
             setTimeout(() => {
               reset()
@@ -702,4 +710,8 @@ closeButtons.forEach((btn) => {
       instruction.classList.add('offScreen')
     }
   })
+})
+
+levelsWon.forEach((num) => {
+  levels[num].classList.add('playable')
 })
