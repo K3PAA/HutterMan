@@ -445,7 +445,7 @@ levels.forEach((level) => {
             }
           })
           //player.toCollect daj zamiast 1
-          if (player.collected == 1) {
+          if (player.collected == player.toCollect) {
             clearInterval(createBombs)
             createBombs = undefined
 
