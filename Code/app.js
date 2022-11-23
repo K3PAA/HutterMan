@@ -15,9 +15,18 @@ canvas.height = 768
 const pBomb = new Audio('sounds/p-bomb.mp3')
 pBomb.volume = 0.1
 
+const winAudio = new Audio('sounds/win.mp3')
+winAudio.volume = 0.1
+
+const die = new Audio('sounds/die.mp3')
+die.volume = 0.1
+
+const takeDmg = new Audio('sounds/takeDmg.mp3')
+takeDmg.volume = 0.1
+
 // In lobby add Functionality to change the game volume based on input system
 const gameOn = new Audio('sounds/game.mp3')
-gameOn.volume = 0.4
+gameOn.volume = 0.2
 
 const menu = document.querySelector('.menu')
 const levels = document.querySelectorAll('.level')
@@ -73,14 +82,6 @@ let ice = undefined
 let animate = undefined
 
 let levelsWon = []
-
-if (localStorage.getItem('savedLevels')) {
-  let savedLevels = JSON.parse(localStorage.getItem('savedLevels'))
-
-  for (let i = 0; i < savedLevels.length; i++) {
-    levelsWon.push(savedLevels[i] + 1)
-  }
-}
 
 levels.forEach((level) => {
   level.addEventListener('click', (e) => {
@@ -401,7 +402,10 @@ levels.forEach((level) => {
                 rectangle2: player,
               })
             ) {
-              if (!inTouch && player.health > 0) player.health--
+              if (!inTouch && player.health > 0) {
+                player.health--
+                takeDmg.play()
+              }
               inTouch = true
 
               setTimeout(() => {
@@ -412,6 +416,7 @@ levels.forEach((level) => {
 
           if (player.health == 0) {
             player.image = playerDie
+
             gameOn.pause()
             removeEventListener('keydown', move)
             clearInterval(createBombs)
@@ -419,14 +424,15 @@ levels.forEach((level) => {
             setTimeout(() => {
               clearInterval(animate)
               animate = undefined
+              die.play()
               reset()
-            }, 1000)
+            }, 850)
           }
 
-          if (player.velocity.x > 0) {
-            player.spacing = 40
-          } else {
+          if (player.velocity.x < 0) {
             player.spacing = 8
+          } else {
+            player.spacing = 40
           }
 
           ice.forEach((tile) => {
@@ -450,13 +456,7 @@ levels.forEach((level) => {
             createBombs = undefined
 
             gameOn.pause()
-
-            c.fillStyle = 'red'
-            c.font = `40px Verdana`
-            c.fillText('Level Completed', canvas.width / 2, canvas.height / 2)
-
-            clearInterval(animate)
-            animate = undefined
+            winAudio.play()
 
             levelsWon.push(curr)
 
@@ -467,12 +467,12 @@ levels.forEach((level) => {
             }
 
             levelsWon.forEach((num) => {
-              levels[num + 1].classList.add('playable')
+              if (num < 5) levels[num + 1].classList.add('playable')
             })
 
-            localStorage.setItem('savedLevels', JSON.stringify(levelsWon))
-
             setTimeout(() => {
+              clearInterval(animate)
+              animate = undefined
               reset()
             }, 1000)
 
@@ -487,39 +487,42 @@ levels.forEach((level) => {
         addEventListener('keyup', stop)
 
         //Creating Bombs
-        createBombs = setInterval(() => {
-          //pBomb.play()
-          boom = false
-          bombs.push(
-            new Bomb({
-              width: 64,
-              height: 64,
-              position: {
-                x: player.position.x - 20,
-                y: player.position.y - 12,
-              },
-            })
-          )
+        if (createBombs == undefined) {
+          createBombs = setInterval(() => {
+            //pBomb.play()
+            boom = false
+            bombs.push(
+              new Bomb({
+                width: 64,
+                height: 64,
+                position: {
+                  x: player.position.x - 20,
+                  y: player.position.y - 12,
+                },
+              })
+            )
 
-          setTimeout(() => {
-            boom = true
-            boomed = true
-          }, 750)
+            setTimeout(() => {
+              boom = true
+              boomed = true
+            }, 750)
 
-          setTimeout(() => {
-            if (
-              rectangularCollision({
-                rectangle1: player,
-                rectangle2: bombs[0],
-              }) &&
-              player.health > 0
-            ) {
-              player.health--
-            }
+            setTimeout(() => {
+              if (
+                rectangularCollision({
+                  rectangle1: player,
+                  rectangle2: bombs[0],
+                }) &&
+                player.health > 0
+              ) {
+                player.health--
+                takeDmg.play()
+              }
 
-            bombs.pop()
-          }, 900)
-        }, 1100)
+              bombs.pop()
+            }, 900)
+          }, 1100)
+        }
       }
     }
   })
@@ -710,8 +713,4 @@ closeButtons.forEach((btn) => {
       instruction.classList.add('offScreen')
     }
   })
-})
-
-levelsWon.forEach((num) => {
-  levels[num].classList.add('playable')
 })
