@@ -24,8 +24,10 @@ die.volume = 0.1
 const takeDmg = new Audio('sounds/takeDmg.mp3')
 takeDmg.volume = 0.1
 
+const bombImage = new Image()
+bombImage.src = './assets/Bomb.png'
 // In lobby add Functionality to change the game volume based on input system
-const gameOn = new Audio('sounds/game.mp3')
+const gameOn = new Audio('sounds/game.wav')
 gameOn.volume = 0.2
 
 const menu = document.querySelector('.menu')
@@ -40,11 +42,17 @@ const copyText = document.querySelectorAll('.copy-text')
 const playerImage = new Image()
 playerImage.src = './assets/player.png'
 
+const playerX = new Image()
+playerX.src = './assets/soldier.png'
+
 const playerDie = new Image()
 playerDie.src = 'assets/Player_die.png'
 
 const box = new Image()
 box.src = 'assets/boxes.png'
+
+const hutImage = new Image('image/hut.png')
+hutImage.src = 'assets/hut.png'
 
 const pillar = new Image()
 pillar.src = 'assets/Pillar.png'
@@ -78,7 +86,7 @@ let huts2 = undefined
 let spp = undefined
 let spe = undefined
 let ice = undefined
-
+let bombAnimationState = 0
 let animate = undefined
 
 let levelsWon = []
@@ -137,6 +145,8 @@ levels.forEach((level) => {
                   y: 0,
                 },
                 move: 'y',
+                image: '',
+                spacing: 0,
                 width: 32,
                 height: 60,
                 health: 2,
@@ -206,6 +216,7 @@ levels.forEach((level) => {
                   x: x * 32,
                   y: y * 32,
                 },
+                image: hutImage,
               })
             )
           }
@@ -234,8 +245,10 @@ levels.forEach((level) => {
                   y: 0,
                 },
                 move: 'x',
-                width: 32,
-                height: 60,
+                image: playerX,
+                spacing: 0,
+                width: 48,
+                height: 48,
                 health: 2,
               })
             )
@@ -367,6 +380,7 @@ levels.forEach((level) => {
                             x: curr.x,
                             y: curr.y,
                           },
+                          image: hutImage,
                         })
                       )
                     }, 200)
@@ -415,10 +429,10 @@ levels.forEach((level) => {
           }
 
           if (player.health == 0) {
+            removeEventListener('keydown', move)
             player.image = playerDie
 
             gameOn.pause()
-            removeEventListener('keydown', move)
             clearInterval(createBombs)
             createBombs = undefined
             setTimeout(() => {
@@ -429,12 +443,6 @@ levels.forEach((level) => {
             }, 850)
           }
 
-          if (player.velocity.x < 0) {
-            player.spacing = 8
-          } else {
-            player.spacing = 40
-          }
-
           ice.forEach((tile) => {
             if (
               rectangularCollision({
@@ -442,13 +450,19 @@ levels.forEach((level) => {
                 rectangle2: player,
               })
             ) {
-              if (sliding < 1.5) sliding += 0.03
+              if (sliding < 1.25) sliding += 0.03
 
               if (lastKey == 'w') player.position.y -= sliding
               else if (lastKey == 's') player.position.y += sliding
               else if (lastKey == 'a') player.position.x -= sliding
               else if (lastKey == 'd') player.position.x += sliding
             }
+          })
+
+          enemies.forEach((enemie) => {
+            if (enemie.speed > 0) {
+              enemie.spacingY = 96
+            } else enemie.spacingY = 32
           })
           //player.toCollect daj zamiast 1
           if (player.collected == player.toCollect) {
@@ -488,6 +502,7 @@ levels.forEach((level) => {
 
         //Creating Bombs
         if (createBombs == undefined) {
+          bombAnimationState = 0
           createBombs = setInterval(() => {
             //pBomb.play()
             boom = false
@@ -499,10 +514,14 @@ levels.forEach((level) => {
                   x: player.position.x - 20,
                   y: player.position.y - 12,
                 },
+                image: bombImage,
               })
             )
+            bombAnimationState = 1
 
             setTimeout(() => {
+              bombs[0].spacingX = 0
+              bombAnimationState = 2
               boom = true
               boomed = true
             }, 750)
@@ -518,10 +537,12 @@ levels.forEach((level) => {
                 player.health--
                 takeDmg.play()
               }
-
-              bombs.pop()
             }, 900)
-          }, 1100)
+
+            setTimeout(() => {
+              bombs.pop()
+            }, 950)
+          }, 1050)
         }
       }
     }
@@ -540,6 +561,7 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
 function move(e) {
   if (e.key == 'd') {
     lastKey = 'd'
+    player.spacing = 40
     if (!press.right) {
       player.spacing = 40
       press.right = setInterval(() => {
@@ -714,3 +736,55 @@ closeButtons.forEach((btn) => {
     }
   })
 })
+
+let imagesAniate = setInterval(() => {
+  if (huts) {
+    huts.forEach((hut) => {
+      if (hut.spacing == 96) hut.spacing = 0
+      else hut.spacing += 32
+    })
+  }
+
+  if (huts2) {
+    huts2.forEach((hut) => {
+      if (hut.spacing == 96) hut.spacing = 0
+      else hut.spacing += 32
+    })
+  }
+}, 300)
+
+let playerAnimate = setInterval(() => {
+  if (player && player.health == 0) {
+    player.image = playerDie
+    // 416 + 8 becouse of player on center
+    if (player.spacing != 456) {
+      player.spacing += 32
+      player.update()
+    }
+  }
+}, 60)
+
+let enemyAnimate = setInterval(() => {
+  if (enemies) {
+    enemies.forEach((enemie) => {
+      if (enemie.move == 'x') {
+        if (enemie.spacing == 224) enemie.spacing = 0
+        else enemie.spacing += 32
+      }
+    })
+  }
+}, 400)
+
+let bombTime = 50
+let bombAnimate = setInterval(() => {
+  if (bombAnimationState == 1 && bombs[0]) {
+    bombTime = 50
+    bombs[0].spacingX += 32
+  } else if (bombAnimationState == 2 && bombs[0]) {
+    bombTime = 100
+    bombs[0].spacingY = 32
+
+    if (bombs[0].spacingX == 64) bombs[0].spacingX = 64
+    else bombs[0].spacingX += 32
+  }
+}, bombTime)

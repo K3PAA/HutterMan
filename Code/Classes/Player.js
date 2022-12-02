@@ -21,15 +21,14 @@ class Player {
     this.height = 32 * this.size
 
     this.collected = 0
-
+    this.y = 32
     this.spacing = spacing
-    this.frames = 0
   }
   draw() {
     // c.drawImage(this.image, this.position.x, this.position.y)
     c.drawImage(
       this.image,
-      this.spacing + this.frames,
+      this.spacing,
       0,
       this.width / this.size,
       this.height / this.size,
@@ -46,17 +45,7 @@ class Player {
     for (let i = 0; i < this.health; i++) {
       c.drawImage(heart, 0, 0, 254, 254, i * 34 + 10, 10, 32, 32)
     }
-    if (this.health == 0) {
-      if (this.frames < 416) {
-        this.Interval = setInterval(() => {
-          this.frames += 32
-        }, 500)
-      } else {
-        this.Interval = undefined
-        clearInterval(this.Interval)
-        this.frames = 384
-      }
-    }
+
     this.draw()
   }
 }

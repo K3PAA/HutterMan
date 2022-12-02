@@ -5,25 +5,41 @@ canvas.width = 1024
 canvas.height = 768
 
 class Bomb {
-  constructor({ position, width, height }) {
+  constructor({ position, width, height, image }) {
     this.position = position
     this.width = width
     this.height = height
+    this.image = image
+    this.spacingX = 0
+    this.spacingY = 0
   }
 
   draw() {
-    c.fillStyle = 'black'
-    c.fillRect(
-      this.position.x + 16,
-      this.position.y + 18,
+    c.drawImage(
+      this.image,
+      this.spacingX,
+      this.spacingY,
       this.width - 32,
-      this.height - 32
+      this.height - 32,
+      this.position.x,
+      this.position.y,
+      this.width,
+      this.height
     )
   }
 
   boom() {
-    c.fillStyle = 'orange'
-    c.fillRect(this.position.x, this.position.y, this.width, this.height)
+    c.drawImage(
+      this.image,
+      this.spacingX,
+      this.spacingY,
+      this.width - 32,
+      this.height - 32,
+      this.position.x,
+      this.position.y,
+      this.width,
+      this.height
+    )
   }
 }
 
